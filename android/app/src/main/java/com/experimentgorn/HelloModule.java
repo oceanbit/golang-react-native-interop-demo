@@ -9,6 +9,7 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableArray;
 
 import gotorndemo.Gotorndemo;
+import gotorndemo.ValueMaybe;
 
 public class HelloModule extends ReactContextBaseJavaModule {
     private static ReactApplicationContext reactContext;
@@ -19,8 +20,27 @@ public class HelloModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void sayHello(Promise promise) {
-        promise.resolve(Gotorndemo.sayHello());
+    public void readFile(String path, Promise promise) {
+        ValueMaybe fileRead = Gotorndemo.readFile(path);
+        String err = fileRead.getError();
+        String val = fileRead.getValue();
+        if (!err.isEmpty()) {
+            promise.reject(new Exception(err));
+        } else {
+            promise.resolve(val);
+        }
+    }
+
+    @ReactMethod
+    public void writeFile(String path, Promise promise) {
+        ValueMaybe fileWrite  = Gotorndemo.writeFile(path);
+        String err = fileWrite.getError();
+        String val = fileWrite.getValue();
+        if (!err.isEmpty()) {
+            promise.reject(new Exception(err));
+        } else {
+            promise.resolve(val);
+        }
     }
 
     @NonNull

@@ -1,23 +1,40 @@
-import React, {useEffect} from 'react';
+import React from 'react';
 import {
+  Button,
   NativeModules,
   SafeAreaView,
   ScrollView,
   StatusBar,
   Text,
 } from 'react-native';
+import {selectDirectory} from 'react-native-directory-picker';
 
 const App = () => {
-  const [msg, setMsg] = React.useState('');
-  useEffect(() => {
-    NativeModules.HelloModule.sayHello().then(phrase => setMsg(phrase));
-  });
+  const [msg, setMsg] = React.useState('Before the update');
+
+  const pickDirectory = () => {
+    selectDirectory()
+      .then(async directory => {
+        console.log("BEFORE WRITE");
+        await NativeModules.HelloModule.writeFile(directory + '/test.txt');
+        console.log("AFTER WRITE");
+        const newVal = await NativeModules.HelloModule.readFile(
+          directory + '/test.txt',
+        );
+        console.log("HELLO, WORLD");
+        setMsg(newVal);
+      })
+      .catch(err => {
+        setMsg('ERROR: ' + err);
+      });
+  };
 
   return (
     <SafeAreaView>
       <StatusBar />
       <ScrollView contentInsetAdjustmentBehavior="automatic">
-        <Text>{msg} and React Native</Text>
+        <Button title={'Pick Directory'} onPress={pickDirectory} />
+        <Text>{msg}</Text>
       </ScrollView>
     </SafeAreaView>
   );
