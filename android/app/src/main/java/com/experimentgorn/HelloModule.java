@@ -4,14 +4,19 @@ import android.net.Uri;
 
 import androidx.annotation.NonNull;
 
+import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableArray;
+import com.facebook.react.bridge.WritableArray;
+import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.modules.core.RCTNativeAppEventEmitter;
 
 import gotorndemo.Gotorndemo;
-import gotorndemo.ValueMaybe;
+import gotorndemo.Observer;
 
 public class HelloModule extends ReactContextBaseJavaModule {
     private static ReactApplicationContext reactContext;
@@ -21,32 +26,49 @@ public class HelloModule extends ReactContextBaseJavaModule {
         reactContext = context;
     }
 
-    @ReactMethod
-    public void readFile(String dir, Promise promise) {
-        Uri dirUri = Uri.parse(dir);
-        String path = FileUtil.getFullPathFromTreeUri(dirUri, reactContext);
-        ValueMaybe fileRead = Gotorndemo.readFile(path);
-        String err = fileRead.getError();
-        String val = fileRead.getValue();
-        if (!err.isEmpty()) {
-            promise.reject(new Exception(err));
-        } else {
-            promise.resolve(val);
+    private void sendEvent(String eventName, WritableMap params) {
+        reactContext
+                .getJSModule(RCTNativeAppEventEmitter.class)
+                .emit(eventName, params);
+    }
+
+    public class SysObserver implements Observer {
+        public void onSeek(byte[] byteChunk, long currentFileChunkIndex, long fileSize) {
+            WritableMap data = Arguments.createMap();
+            WritableArray byteChunkArr = Arguments.createArray();
+
+            for (byte byteItem: byteChunk) {
+                byteChunkArr.pushInt(byteItem);
+            }
+            data.putArray("bytes", byteChunkArr);
+            data.putDouble("currentFileChunkIndex", (int)currentFileChunkIndex);
+            data.putInt("fileSize", (int) fileSize);
+
+            sendEvent("ReadChange", data);
         }
     }
 
     @ReactMethod
-    public void writeFile(String dir, Promise promise) {
+    public void observeFile(String dir, Promise promise) {
         Uri dirUri = Uri.parse(dir);
         String path = FileUtil.getFullPathFromTreeUri(dirUri, reactContext);
-        ValueMaybe fileWrite  = Gotorndemo.writeFile(path);
-        String err = fileWrite.getError();
-        String val = fileWrite.getValue();
-        if (!err.isEmpty()) {
-            promise.reject(new Exception(err));
-        } else {
-            promise.resolve(val);
-        }
+
+        Gotorndemo.observeFile(path, new SysObserver());
+    }
+
+    @ReactMethod
+    public void goUp() {
+        Gotorndemo.goUp();
+    }
+
+    @ReactMethod
+    public void goDown() {
+        Gotorndemo.goDown();
+    }
+
+    @ReactMethod
+    public void stopObservingFile() {
+        Gotorndemo.stopObservingFile();
     }
 
     @NonNull

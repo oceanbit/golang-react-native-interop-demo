@@ -44,8 +44,6 @@ public final class FileUtil {
     private static String getVolumePath(final String volumeId, Context context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP)
             return null;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
-            return getVolumePathForAndroid11AndAbove(volumeId, context);
         else
             return getVolumePathBeforeAndroid11(volumeId, context);
     }
@@ -72,29 +70,6 @@ public final class FileUtil {
 
                 if (uuid != null && uuid.equals(volumeId))    // other volumes?
                     return (String) getPath.invoke(storageVolumeElement);
-            }
-            // not found.
-            return null;
-        } catch (Exception ex) {
-            return null;
-        }
-    }
-
-    @TargetApi(Build.VERSION_CODES.R)
-    private static String getVolumePathForAndroid11AndAbove(final String volumeId, Context context) {
-        try {
-            StorageManager mStorageManager = (StorageManager) context.getSystemService(Context.STORAGE_SERVICE);
-            List<StorageVolume> storageVolumes = mStorageManager.getStorageVolumes();
-            for (StorageVolume storageVolume : storageVolumes) {
-                // primary volume?
-                if (storageVolume.isPrimary() && PRIMARY_VOLUME_NAME.equals(volumeId))
-                    return storageVolume.getDirectory().getPath();
-
-                // other volumes?
-                String uuid = storageVolume.getUuid();
-                if (uuid != null && uuid.equals(volumeId))
-                    return storageVolume.getDirectory().getPath();
-
             }
             // not found.
             return null;
