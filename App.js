@@ -15,13 +15,11 @@ const App = () => {
   const pickDirectory = () => {
     selectDirectory()
       .then(async directory => {
-        console.log("BEFORE WRITE");
-        await NativeModules.HelloModule.writeFile(directory + '/test.txt');
-        console.log("AFTER WRITE");
-        const newVal = await NativeModules.HelloModule.readFile(
-          directory + '/test.txt',
-        );
-        console.log("HELLO, WORLD");
+        console.log('BEFORE WRITE');
+        await NativeModules.HelloModule.writeFile(directory);
+        console.log('AFTER WRITE');
+        const newVal = await NativeModules.HelloModule.readFile(directory);
+        console.log('HELLO, WORLD');
         setMsg(newVal);
       })
       .catch(err => {

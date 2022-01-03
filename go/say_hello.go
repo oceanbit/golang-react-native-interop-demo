@@ -2,6 +2,7 @@ package gotorndemo
 
 import (
 	"os"
+	"path/filepath"
 )
 
 type ValueMaybe struct {
@@ -9,17 +10,17 @@ type ValueMaybe struct {
 	Value string
 }
 
-func WriteFile(path string) *ValueMaybe {
+func WriteFile(dir string) *ValueMaybe {
 	val := []byte("Hello, world!\n")
-	err := os.WriteFile(path, val, 0644)
+	err := os.WriteFile(filepath.Join(dir, "test.txt"), val, 0644)
 	if err != nil {
 		return &ValueMaybe{Error: err.Error(), Value: ""}
 	}
 	return &ValueMaybe{Error: "", Value: ""}
 }
 
-func ReadFile(path string) *ValueMaybe {
-	val, err := os.ReadFile(path)
+func ReadFile(dir string) *ValueMaybe {
+	val, err := os.ReadFile(filepath.Join(dir, "test.txt"))
 	if err != nil {
 		return &ValueMaybe{Error: err.Error(), Value: ""}
 	}

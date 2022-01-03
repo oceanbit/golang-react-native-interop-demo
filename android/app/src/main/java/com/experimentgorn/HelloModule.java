@@ -1,5 +1,7 @@
 package com.experimentgorn;
 
+import android.net.Uri;
+
 import androidx.annotation.NonNull;
 
 import com.facebook.react.bridge.Promise;
@@ -20,7 +22,9 @@ public class HelloModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void readFile(String path, Promise promise) {
+    public void readFile(String dir, Promise promise) {
+        Uri dirUri = Uri.parse(dir);
+        String path = FileUtil.getFullPathFromTreeUri(dirUri, reactContext);
         ValueMaybe fileRead = Gotorndemo.readFile(path);
         String err = fileRead.getError();
         String val = fileRead.getValue();
@@ -32,7 +36,9 @@ public class HelloModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void writeFile(String path, Promise promise) {
+    public void writeFile(String dir, Promise promise) {
+        Uri dirUri = Uri.parse(dir);
+        String path = FileUtil.getFullPathFromTreeUri(dirUri, reactContext);
         ValueMaybe fileWrite  = Gotorndemo.writeFile(path);
         String err = fileWrite.getError();
         String val = fileWrite.getValue();
